@@ -1,0 +1,75 @@
+seed: 3407
+
+description: Anonymous one-dataset example config for SG-RWKV on a Kvasir-SEG-style dataset.
+
+data:
+  task: binary
+  num_classes: 1
+  image_channels: 3
+  input_size: [256, 256]
+  image_dirname: images
+  mask_dirname: masks
+  mask_threshold: 0.5
+  activate_dataset: Kvasir-SEG
+  datasets:
+    - name: Kvasir-SEG
+      root: ./data/Kvasir-SEG
+      split_json: null
+  split:
+    train: 0.8
+    val: 0.1
+    test: 0.1
+  batch_size: 8
+  num_workers: 4
+  pin_memory: true
+  persistent_workers: true
+  augment:
+    random_hflip: true
+    random_vflip: true
+    random_rot90: true
+
+model:
+  active_model: HS3R_Net_V005
+  models:
+    - name: HS3R_Net_V005
+      alias: HS3R_Net_V005
+      kwargs:
+        in_channels: 3
+        out_channels: 1
+        dims: [32, 64, 128, 256, 512]
+        rwkv_stages: [false, true, true, true, true]
+        enable_wkv_cuda: true
+        wkv_t_max: 16384
+        wkv_cuda_dir: null
+        wkv_verbose: false
+        spv_n_spixels: [32, 32, 32, 32]
+        spv_assignment_topk: [9, 9, 9, 9]
+        spv_max_spatial: 128
+
+loss:
+  lambda_dice: 1.0
+  lambda_ce: 1.0
+
+metrics:
+  threshold: 0.5
+
+optim:
+  lr: 0.0003
+  weight_decay: 0.0001
+  scheduler: cosine
+  min_lr: 0.000001
+
+trainer:
+  max_epochs: 300
+  accelerator: auto
+  devices: 1
+  precision: 32
+  log_every_n_steps: 20
+  early_stopping:
+    monitor: val/Dice
+    mode: max
+    patience: 80
+
+logging:
+  save_dir: ./runs
+  experiment_name: SG_RWKV_Kvasir_anonymous
