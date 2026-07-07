@@ -1,1 +1,0 @@
-"""Local superpixel utility namespace."""
